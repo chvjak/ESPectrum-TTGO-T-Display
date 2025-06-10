@@ -54,6 +54,8 @@ visit https://zxespectrum.speccy.org/contacto
 #include "wd1793.h"
 
 #include "ZXKeyb.h"
+#include "tft.h"
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "driver/timer.h"
@@ -790,6 +792,7 @@ void ESPectrum::setup()
 
     if (Config::slog_on) showMemInfo("Setup finished.");
 
+    TFTDisplay::begin();
 }
 
 //=======================================================================================
