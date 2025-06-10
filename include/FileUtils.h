@@ -28,7 +28,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-To Contact the dev team you can write to zxespectrum@gmail.com or 
+To Contact the dev team you can write to zxespectrum@gmail.com or
 visit https://zxespectrum.speccy.org/contacto
 
 */
@@ -61,7 +61,7 @@ struct DISK_FTYPE {
     int begin_row;
     int focus;
     uint8_t fdMode;
-    string fileSearch;    
+    string fileSearch;
 };
 
 class FileUtils
@@ -72,6 +72,7 @@ public:
     static size_t fileSize(const char * mFile);
 
     static void initFileSystem();
+    static void initFileSystemSD();
     static bool mountSDCard(int PIN_MISO, int PIN_MOSI, int PIN_CLK, int PIN_CS);
     static void unmountSDCard();
 
@@ -93,7 +94,7 @@ public:
     static bool hasZ80extension(string filename);
     static bool hasPextension(string filename);
     static bool hasTAPextension(string filename);
-    static bool hasTZXextension(string filename);    
+    static bool hasTZXextension(string filename);
 
     static void deleteFilesWithExtension(const char *folder_path, const char *extension);
 
@@ -113,7 +114,7 @@ public:
 
 private:
     friend class Config;
-    static sdmmc_card_t *card;    
+    static sdmmc_card_t *card;
 };
 
 #define MOUNT_POINT_SD "/sd"

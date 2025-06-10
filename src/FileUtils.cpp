@@ -28,7 +28,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-To Contact the dev team you can write to zxespectrum@gmail.com or 
+To Contact the dev team you can write to zxespectrum@gmail.com or
 visit https://zxespectrum.speccy.org/contacto
 
 */
@@ -112,7 +112,7 @@ size_t FileUtils::fileSize(const char * mFile) {
     return stat_buf.st_size;
 }
 
-void FileUtils::initFileSystem() {
+void FileUtils::initFileSystemSD() {
 
     // Try to mount SD card on LILYGO TTGO VGA32 Board or ESPectrum Board
     if (!SDReady) SDReady = mountSDCard(PIN_NUM_MISO_LILYGO_ESPECTRUM,PIN_NUM_MOSI_LILYGO_ESPECTRUM,PIN_NUM_CLK_LILYGO_ESPECTRUM,PIN_NUM_CS_LILYGO_ESPECTRUM);
@@ -120,6 +120,16 @@ void FileUtils::initFileSystem() {
     // Try to mount SD card on Olimex ESP32-SBC-FABGL Board
     if ((!ZXKeyb::Exists) && (!SDReady)) SDReady = mountSDCard(PIN_NUM_MISO_SBCFABGL,PIN_NUM_MOSI_SBCFABGL,PIN_NUM_CLK_SBCFABGL,PIN_NUM_CS_SBCFABGL);
 
+}
+
+void FileUtils::initFileSystem() {
+    // Mount SPIFFS at /spiffs instead of SD card
+    #include "fabgl.h"
+    printf("Mounting SPIFFS");
+
+    SDReady = ::FileBrowser::mountSPIFFS(false, "/spiffs");
+
+    printf("SPIFFS mounted at /spiffs, status: %s", SDReady ? "OK" : "Failed");
 }
 
 bool FileUtils::mountSDCard(int PIN_MISO, int PIN_MOSI, int PIN_CLK, int PIN_CS) {
@@ -132,7 +142,7 @@ bool FileUtils::mountSDCard(int PIN_MISO, int PIN_MOSI, int PIN_CLK, int PIN_CS)
         .max_files = 8,
         .allocation_unit_size = 16 * 1024
     };
-    
+
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
 
     spi_bus_config_t bus_cfg = {
@@ -143,15 +153,15 @@ bool FileUtils::mountSDCard(int PIN_MISO, int PIN_MOSI, int PIN_CLK, int PIN_CS)
         .quadhd_io_num = -1,
         .max_transfer_sz = 4000,
     };
-    
+
     ret = spi_bus_initialize(SPI2_HOST, &bus_cfg, SPI_DMA_CH1);
     if (ret != ESP_OK) {
         printf("SD Card init: Failed to initialize bus.\n");
-        vTaskDelay(20 / portTICK_PERIOD_MS);    
+        vTaskDelay(20 / portTICK_PERIOD_MS);
         return false;
     }
 
-    vTaskDelay(20 / portTICK_PERIOD_MS);    
+    vTaskDelay(20 / portTICK_PERIOD_MS);
 
     sdspi_device_config_t slot_config =  {
     .host_id   = SDSPI_DEFAULT_HOST,
@@ -171,7 +181,7 @@ bool FileUtils::mountSDCard(int PIN_MISO, int PIN_MOSI, int PIN_CLK, int PIN_CS)
             printf("Failed to initialize the card.\n");
         }
         spi_bus_free(SPI2_HOST);
-        vTaskDelay(20 / portTICK_PERIOD_MS);    
+        vTaskDelay(20 / portTICK_PERIOD_MS);
         return false;
     }
 
@@ -299,7 +309,7 @@ bool FileUtils::isSDReady() {
 //     }
 
 //     struct dirent* de = readdir(dir);
-    
+
 //     if (!de) {
 
 //         printf("No entries found!\n");
@@ -308,9 +318,9 @@ bool FileUtils::isSDReady() {
 
 //         int cnt = 0;
 //         while (true) {
-            
+
 //             printf("Found file: %s\n", de->d_name);
-            
+
 //             string filename = de->d_name;
 
 //             // printf("readdir filename -> %s\n", filename.c_str());
@@ -326,10 +336,10 @@ bool FileUtils::isSDReady() {
 //                 filelist += filename + "\n";
 //                 cnt++;
 //             }
-            
+
 //             de = readdir(dir);
 //             if ((!de) || (cnt == 20)) break;
-        
+
 //         }
 
 //     }
@@ -364,7 +374,7 @@ int FileUtils::getDirStats(const string& filedir, const vector<string>& filexts,
                             if (high = *hash & 0xF0000000) *hash ^= high >> 24;
                             *hash &= ~high;
                         }
-                        if (de->d_type == DT_REG) 
+                        if (de->d_type == DT_REG)
                             (*elements)++; // Count elements in dir
                         else if (de->d_type == DT_DIR)
                             (*ndirs)++;
@@ -443,7 +453,7 @@ void FileUtils::DirToFile(string fpath, uint8_t ftype, unsigned long hash, unsig
     }
 
     OSD::progressDialog(OSD_FILE_INDEXING[Config::lang],OSD_FILE_INDEXING_1[Config::lang],0,0);
-    
+
     int items_processed = 0;
     struct dirent* de;
 
@@ -472,7 +482,7 @@ void FileUtils::DirToFile(string fpath, uint8_t ftype, unsigned long hash, unsig
         OSD::progressDialog("","",0,2);
         return;
     }
-  
+
     printf("\nAfter checking tempdir");
     ESPectrum::showMemInfo();
     printf("\n");
@@ -494,7 +504,7 @@ void FileUtils::DirToFile(string fpath, uint8_t ftype, unsigned long hash, unsig
 
     while ( !eof2 || ( fin && !feof(fin)) ) {
         fnameLastSaved = "";
-    
+
         holdFile2 = false;
 
         iterations++;
@@ -533,7 +543,7 @@ void FileUtils::DirToFile(string fpath, uint8_t ftype, unsigned long hash, unsig
                 if (buffer.empty()) { // Fill buffer with directory entries
 
                     // buffer.clear();
-                    
+
                     if ( bufferSize ) {
 
                         printf("\nBefore buffer fill -> ");
@@ -598,7 +608,7 @@ void FileUtils::DirToFile(string fpath, uint8_t ftype, unsigned long hash, unsig
                 }
                 fnameToSave = fname2;
                 readFile2 = true;
-            } else 
+            } else
             // eof2 || fname1 < fname2
             // si fname2 > fname1 entonces grabar fname1, ya que fname2 esta ordenado y no puede venir uno menor en este grupo
             if ( eof2 || strcasecmp(fname1.c_str(), fname2.c_str()) < 0 ) {
@@ -642,7 +652,7 @@ void FileUtils::DirToFile(string fpath, uint8_t ftype, unsigned long hash, unsig
             std::vector<std::string>().swap(buffer); // free memory
 
             filexts.clear(); // Clear vector
-            std::vector<std::string>().swap(filexts); // free memory  
+            std::vector<std::string>().swap(filexts); // free memory
 
             closedir( dir );
             // Close progress dialog
@@ -664,7 +674,7 @@ void FileUtils::DirToFile(string fpath, uint8_t ftype, unsigned long hash, unsig
     std::vector<std::string>().swap(buffer); // free memory
 
     filexts.clear(); // Clear vector
-    std::vector<std::string>().swap(filexts); // free memory    
+    std::vector<std::string>().swap(filexts); // free memory
 
     if ( fin ) fclose(fin);
     closedir(dir);
@@ -767,7 +777,7 @@ void FileUtils::deleteFilesWithExtension(const char *folder_path, const char *ex
 // // Get all sna files sorted alphabetically
 // string FileUtils::getSortedFileList(string fileDir)
 // {
-    
+
 //     // get string of unsorted filenames, separated by newlines
 //     string entries = getFileEntriesFromDir(fileDir);
 

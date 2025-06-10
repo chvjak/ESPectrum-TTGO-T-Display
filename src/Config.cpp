@@ -28,7 +28,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-To Contact the dev team you can write to zxespectrum@gmail.com or 
+To Contact the dev team you can write to zxespectrum@gmail.com or
 visit https://zxespectrum.speccy.org/contacto
 
 */
@@ -64,7 +64,7 @@ string   Config::pref_romSet_48 = "48K";
 string   Config::pref_romSet_128 = "128K";
 string   Config::pref_romSet_TK90X = "v1es";
 string   Config::pref_romSet_TK95 = "95es";
-string   Config::ram_file = NO_RAM_FILE;
+string   Config::ram_file = "/spiffs/1.z80";
 string   Config::last_ram_file = NO_RAM_FILE;
 
 bool     Config::slog_on = true;
@@ -72,7 +72,7 @@ bool     Config::aspect_16_9 = false;
 uint8_t  Config::videomode = 0; // 0 -> SAFE VGA, 1 -> 50HZ VGA, 2 -> 50HZ CRT
 uint8_t  Config::esp32rev = 0;
 uint8_t  Config::lang = 0;
-bool     Config::AY48 = true;
+bool     Config::AY48 = false;
 bool     Config::Issue2 = true;
 bool     Config::flashload = true;
 bool     Config::tape_player = false; // Tape player mode
@@ -80,7 +80,7 @@ bool     Config::tape_timing_rg = false; // Rodolfo Guerra ROMs tape timings
 
 uint8_t  Config::joystick1 = JOY_SINCLAIR1;
 uint8_t  Config::joystick2 = JOY_SINCLAIR2;
-uint16_t Config::joydef[24] = { 
+uint16_t Config::joydef[24] = {
     fabgl::VK_6,
     fabgl::VK_7,
     fabgl::VK_9,
@@ -114,7 +114,7 @@ bool     Config::CursorAsJoy = false;
 int8_t   Config::CenterH = 0;
 int8_t   Config::CenterV = 0;
 
-string   Config::SNA_Path = "/";
+string   Config::SNA_Path = "/spiffs/";
 string   Config::TAP_Path = "/";
 string   Config::DSK_Path = "/";
 
@@ -145,15 +145,15 @@ uint8_t Config::port254default = 0xbf; // For TK90X v1 ROM -> 0xbf: Spanish, 0x3
 uint8_t Config::ALUTK = 1; // TK ALU -> 0 -> Ferranti, 1 -> Microdigital 50hz, 2 -> Microdigital 60hz
 uint8_t Config::DiskCtrl = 1; // 0 -> None, 1 -> Betadisk
 
-bool Config::TimeMachine = false; 
+bool Config::TimeMachine = false;
 
 int8_t Config::volume = ESP_VOLUME_DEFAULT;
 
 // erase control characters (in place)
 static inline void erase_cntrl(std::string &s) {
-    s.erase(std::remove_if(s.begin(), s.end(), 
-            [&](char ch) 
-            { return std::iscntrl(static_cast<unsigned char>(ch));}), 
+    s.erase(std::remove_if(s.begin(), s.end(),
+            [&](char ch)
+            { return std::iscntrl(static_cast<unsigned char>(ch));}),
             s.end());
 }
 
@@ -202,17 +202,17 @@ void Config::load() {
 
         size_t required_size;
         char* str_data;
-        
+
         err = nvs_get_str(handle, "arch", NULL, &required_size);
         if (err == ESP_OK) {
             str_data = (char *)malloc(required_size);
             nvs_get_str(handle, "arch", str_data, &required_size);
             // printf("arch:%s\n",str_data);
             arch = str_data;
-            
+
             // FORCE MODEL FOR TESTING
             // arch = "48K";
-            
+
             free(str_data);
         } else {
             // No nvs data found. Save it
@@ -316,7 +316,7 @@ void Config::load() {
             str_data = (char *)malloc(required_size);
             nvs_get_str(handle, "ram", str_data, &required_size);
             // printf("ram:%s\n",str_data);
-            ram_file = str_data;
+            // ram_file = str_data;
             free(str_data);
         }
 
@@ -325,7 +325,7 @@ void Config::load() {
             str_data = (char *)malloc(required_size);
             nvs_get_str(handle, "slog", str_data, &required_size);
             // printf("slog:%s\n",str_data);
-            slog_on = strcmp(str_data, "false");            
+            // slog_on = strcmp(str_data, "false");
             free(str_data);
 
             // slog_on = true; // Force for testing
@@ -469,7 +469,7 @@ void Config::load() {
             str_data = (char *)malloc(required_size);
             nvs_get_str(handle, "SNA_Path", str_data, &required_size);
             // printf("SNA_Path:%s\n",str_data);
-            SNA_Path = str_data;
+            // SNA_Path = str_data;
             free(str_data);
         }
 
@@ -674,7 +674,7 @@ void Config::save(string value) {
             nvs_set_str(handle,"pref_romSet_95",pref_romSet_TK95.c_str());
 
         if((value=="ram") || (value=="all"))
-            nvs_set_str(handle,"ram",ram_file.c_str());   
+            nvs_set_str(handle,"ram",ram_file.c_str());
 
         if((value=="slog") || (value=="all"))
             nvs_set_str(handle,"slog",slog_on ? "true" : "false");
@@ -812,7 +812,7 @@ void Config::save(string value) {
         if (err != ESP_OK) {
             printf("Error (%s) commiting updates to NVS!\n", esp_err_to_name(err));
         }
-        
+
         // printf("Done\n");
 
         // Close
@@ -832,8 +832,8 @@ void Config::requestMachine(string newArch, string newRomSet) {
     if (arch == "48K") {
 
         if (newRomSet=="") romSet = "48K"; else romSet = newRomSet;
-        
-        if (newRomSet=="") romSet48 = "48K"; else romSet48 = newRomSet;        
+
+        if (newRomSet=="") romSet48 = "48K"; else romSet48 = newRomSet;
 
         if (romSet48 == "48K")
             MemESP::rom[0] = (uint8_t *) gb_rom_0_sinclair_48k;
@@ -848,7 +848,7 @@ void Config::requestMachine(string newArch, string newRomSet) {
 
         if (newRomSet=="") romSet = "128K"; else romSet = newRomSet;
 
-        if (newRomSet=="") romSet128 = "128K"; else romSet128 = newRomSet;                
+        if (newRomSet=="") romSet128 = "128K"; else romSet128 = newRomSet;
 
         if (romSet128 == "128K") {
             MemESP::rom[0] = (uint8_t *) gb_rom_0_sinclair_128k;
@@ -885,19 +885,19 @@ void Config::requestMachine(string newArch, string newRomSet) {
     } else if (arch == "TK90X") {
 
         if (newRomSet=="") romSet = "v1es"; else romSet = newRomSet;
-        
+
         if (newRomSet=="") romSetTK90X = "v1es"; else romSetTK90X = newRomSet;
 
         if (romSetTK90X == "v1es")
             MemESP::rom[0] = (uint8_t *) rom_0_TK90X_v1;
         else if (romSetTK90X == "v1pt") {
             MemESP::rom[0] = (uint8_t *) rom_0_TK90X_v1;
-            port254default = 0x3f;                
+            port254default = 0x3f;
         } else if (romSetTK90X == "v2es") {
             MemESP::rom[0] = (uint8_t *) rom_0_TK90X_v2;
         } else if (romSetTK90X == "v2pt") {
             MemESP::rom[0] = (uint8_t *) rom_0_TK90X_v2;
-            port254default = 0x3f;                
+            port254default = 0x3f;
         } else if (romSetTK90X == "v3es") {
             MemESP::rom[0] = (uint8_t *) rom_0_TK90X_v3es;
         } else if (romSetTK90X == "v3pt") {
@@ -913,7 +913,7 @@ void Config::requestMachine(string newArch, string newRomSet) {
     } else if (arch == "TK95") {
 
         if (newRomSet=="") romSet = "95es"; else romSet = newRomSet;
-        
+
         if (newRomSet=="") romSetTK95 = "95es"; else romSetTK95 = newRomSet;
 
         if (romSetTK95 == "95es")
@@ -1003,7 +1003,7 @@ for (int n = m; n < m + 12; n++) {
         if (joytype != JOY_FULLER) {
             if (ESPectrum::JoyVKTranslation[n] >= fabgl::VK_FULLER_RIGHT && ESPectrum::JoyVKTranslation[n] <= fabgl::VK_FULLER_FIRE) {
                 ESPectrum::JoyVKTranslation[n] = fabgl::VK_NONE;
-                save = true;                
+                save = true;
             }
         }
 
