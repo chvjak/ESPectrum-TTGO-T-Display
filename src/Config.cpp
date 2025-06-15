@@ -59,12 +59,12 @@ string   Config::romSet48 = "48K";
 string   Config::romSet128 = "128K";
 string   Config::romSetTK90X = "v1es";
 string   Config::romSetTK95 = "95es";
-string   Config::pref_arch = "48K";
+string   Config::pref_arch = "128K";
 string   Config::pref_romSet_48 = "48K";
 string   Config::pref_romSet_128 = "128K";
 string   Config::pref_romSet_TK90X = "v1es";
 string   Config::pref_romSet_TK95 = "95es";
-string   Config::ram_file = "/spiffs/1.z80";
+string   Config::ram_file = "/spiffs/4.z80";
 string   Config::last_ram_file = NO_RAM_FILE;
 
 bool     Config::slog_on = true;
@@ -72,7 +72,7 @@ bool     Config::aspect_16_9 = false;
 uint8_t  Config::videomode = 0; // 0 -> SAFE VGA, 1 -> 50HZ VGA, 2 -> 50HZ CRT
 uint8_t  Config::esp32rev = 0;
 uint8_t  Config::lang = 0;
-bool     Config::AY48 = false;
+bool     Config::AY48 = true;
 bool     Config::Issue2 = true;
 bool     Config::flashload = true;
 bool     Config::tape_player = false; // Tape player mode
@@ -114,7 +114,7 @@ bool     Config::CursorAsJoy = false;
 int8_t   Config::CenterH = 0;
 int8_t   Config::CenterV = 0;
 
-string   Config::SNA_Path = "/spiffs/";
+string   Config::SNA_Path = "/";
 string   Config::TAP_Path = "/";
 string   Config::DSK_Path = "/";
 
@@ -469,7 +469,7 @@ void Config::load() {
             str_data = (char *)malloc(required_size);
             nvs_get_str(handle, "SNA_Path", str_data, &required_size);
             // printf("SNA_Path:%s\n",str_data);
-            // SNA_Path = str_data;
+            SNA_Path = str_data;
             free(str_data);
         }
 
