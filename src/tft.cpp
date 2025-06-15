@@ -61,7 +61,7 @@ void TFTDisplay::sendFrameBuffer(uint8_t** frameBuffer) {
         lcd.setAddrWindow(0, y, width, 1);
         // Convert each pixel in the line to RGB332 and store in pattern
         for (int x = 0; x < width; ++x) {
-            pattern[x] = convertR2G2B2S2_to_RGB332(frameBuffer[(speccy_height - y - vofs)][x + hofs]);
+            pattern[x] = convertR2G2B2S2_to_RGB332(frameBuffer[(speccy_height - y - vofs)][(x + hofs) ^ 2]);
         }
         lcd.writePixels(pattern, width);
     }
