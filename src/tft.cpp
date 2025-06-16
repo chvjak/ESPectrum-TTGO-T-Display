@@ -19,8 +19,9 @@ static LGFX lcd;
 static int width = 240;
 static int height = 135;
 
-static int speccy_width = 256;
-static int speccy_height = 192;
+// vga resolution?
+static int speccy_width = 320;
+static int speccy_height = 200;
 
 
 static int vofs = 0;
