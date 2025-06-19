@@ -125,6 +125,7 @@ void VGA::allocateLineBuffers(void **frameBuffer) {
 		((unsigned char *)blankBuffer)[i ^ 2] = hsyncBitI | vsyncBitI;
 	}
 
+  /*
 	// Allocate descriptors for all scanlines and populate .next value
 	dmaBufferDescriptors = DMABufferDescriptor::allocateDescriptors(dmaBufferDescCount);
 	for (int i = 0; i < dmaBufferDescCount; i++)
@@ -156,5 +157,5 @@ void VGA::allocateLineBuffers(void **frameBuffer) {
 			dmaBufferDescriptors[d++].setBuffer(frameBuffer[i / vidmodes[mode][vmodeproperties::vDiv]], vidmodes[mode][vmodeproperties::hRes]);
 		}
 	}
-
+*/
 }

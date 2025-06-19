@@ -449,6 +449,7 @@ void ESPectrum::bootKeyboard() {
 
 void ESPectrum::setup()
 {
+    bt_init();
 
     if (Config::slog_on) {
         printf("------------------------------------\n");
@@ -795,7 +796,6 @@ void ESPectrum::setup()
     if (Config::slog_on) showMemInfo("Setup finished.");
 
     TFTDisplay::begin();
-    bt_init();
 }
 
 //=======================================================================================
