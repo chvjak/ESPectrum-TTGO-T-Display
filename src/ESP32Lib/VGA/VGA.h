@@ -1,17 +1,15 @@
 /*
 	Author: bitluni 2019
-	License: 
+	License:
 	Creative Commons Attribution ShareAlike 4.0
 	https://creativecommons.org/licenses/by-sa/4.0/
-	
-	For further details check out: 
+
+	For further details check out:
 		https://youtube.com/bitlunislab
 		https://github.com/bitluni
 		http://bitluni.net
 */
 #pragma once
-
-#include "../I2S/I2S.h"
 
 enum vmodeproperties {
 	hFront,
@@ -115,9 +113,9 @@ enum vmodeproperties {
 #define CrtMode_352x272_TV_48 { 22, 32, 42, 352, 18, 3, 19, 272, 1, 1, 1, 0,128,6,13,8,15 }  // 7 MHZ / 15625 / 50.0801282
 // #define CrtMode_352x264_TV_48 { 22, 32, 42, 352, 22, 3, 23, 264, 1, 1, 1, 0,128,6,13,8,15 }  // 7 MHZ / 15625 / 50.0801282 / 312 VLINES (PAL)
 
-#define CrtMode_352x272_TV_TK50 { 22, 32, 42, 352, 18, 3, 19, 272, 1, 1, 1, 148,241,7,15,8,15 } // 15682 / 50.2638854 
+#define CrtMode_352x272_TV_TK50 { 22, 32, 42, 352, 18, 3, 19, 272, 1, 1, 1, 148,241,7,15,8,15 } // 15682 / 50.2638854
 
-#define CrtMode_352x224_TV_TK60 { 22, 32, 42, 352, 18, 3, 19, 224, 1, 1, 1, 244,8,8,15,8,15 } // 15802 / 59.856887 / 
+#define CrtMode_352x224_TV_TK60 { 22, 32, 42, 352, 18, 3, 19, 224, 1, 1, 1, 244,8,8,15,8,15 } // 15802 / 59.856887 /
 // #define CrtMode_352x220_TV_TK60 { 22, 32, 42, 352, 19, 3, 21, 220, 1, 1, 1, 25,43,5,11,8,15 } // 15742 / 59.856887 / 263 VLINES (NTSC)
 
 #define CrtMode_352x272_TV_128 { 22, 32, 42, 352, 18, 3, 19, 272, 1, 1, 1, 194,47,7,14,8,15 } // 15606 / 50.020008
@@ -126,7 +124,7 @@ enum vmodeproperties {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-const unsigned short int vidmodes[29][17]={ 
+const unsigned short int vidmodes[29][17]={
 	VgaMode_320x240, VgaMode_320x240_scanlines, VgaMode_360x200, VgaMode_360x200_scanlines,
 
 	VgaMode_320x240_50_48, VgaMode_320x240_50_48_scanlines, VgaMode_360x200_50_48,  VgaMode_360x200_50_48_scanlines,
@@ -136,24 +134,24 @@ const unsigned short int vidmodes[29][17]={
 	VgaMode_320x240_50_PENTAGON , VgaMode_320x240_50_PENTAGON_scanlines, VgaMode_360x200_50_PENTAGON, VgaMode_360x200_50_PENTAGON_scanlines,
 
 	// Overscan
-	CrtMode_352x272_TV_48 , 
-	CrtMode_352x272_TV_TK50 , 
-	CrtMode_352x224_TV_TK60 , 
-	CrtMode_352x272_TV_128, 
+	CrtMode_352x272_TV_48 ,
+	CrtMode_352x272_TV_TK50 ,
+	CrtMode_352x224_TV_TK60 ,
+	CrtMode_352x272_TV_128,
 	CrtMode_352x272_TV_PENTAGON
-	
-	// VgaMode_320x240_TV_48, VgaMode_360x200_TV_48, 
-	// VgaMode_320x240_TV_128, VgaMode_360x200_TV_128, 
-	// VgaMode_320x240_TV_PENTAGON , VgaMode_360x200_TV_PENTAGON		
+
+	// VgaMode_320x240_TV_48, VgaMode_360x200_TV_48,
+	// VgaMode_320x240_TV_128, VgaMode_360x200_TV_128,
+	// VgaMode_320x240_TV_PENTAGON , VgaMode_360x200_TV_PENTAGON
 
 };
 
-class VGA : public I2S {
+class VGA {
 
   public:
 
 	VGA(const int i2sIndex = 0);
-	
+
 	bool init(int mode, const int *pinMap, const int bitCount, const int clockPin = -1);
 
 	int mode;
@@ -162,17 +160,12 @@ class VGA : public I2S {
 	int CenterV = 0;
 
   protected:
-	
-	virtual void initSyncBits() = 0;
-	virtual long syncBits(bool h, bool v) = 0;
- 
+
 	long vsyncBit;
 	long hsyncBit;
 	long vsyncBitI;
 	long hsyncBitI;
 
-	virtual void allocateLineBuffers();
-	virtual void allocateLineBuffers(void **frameBuffer);
 	virtual void propagateResolution(const int xres, const int yres) = 0;
 
 };

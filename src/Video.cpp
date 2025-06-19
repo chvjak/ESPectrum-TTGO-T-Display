@@ -114,50 +114,6 @@ static const uint8_t wait_st[128] = {
     6, 5, 4, 3, 2, 1, 0, 0, 6, 5, 4, 3, 2, 1, 0, 0,
 }; // sequence of wait states
 
-IRAM_ATTR void VGA6Bit::interrupt(void *arg) {
-
-    static int64_t prevmicros = 0;
-    static int64_t elapsedmicros = 0;
-    static int cntvsync = 0;
-
-    if (Config::tape_player) {
-        ESPectrum::vsync = true;
-        return;
-    }
-
-    int64_t currentmicros = esp_timer_get_time();
-
-    if (prevmicros) {
-
-        elapsedmicros += currentmicros - prevmicros;
-
-        if (elapsedmicros >= ESPectrum::target[0]) {
-
-            ESPectrum::vsync = true;
-
-            // This code is needed to "finetune" the sync. Without it, vsync and emu video gets slowly desynced.
-            if (VIDEO::VsyncFinetune[0]) {
-                if (cntvsync++ == VIDEO::VsyncFinetune[1]) {
-                    elapsedmicros += VIDEO::VsyncFinetune[0];
-                    cntvsync = 0;
-                }
-            }
-
-            elapsedmicros -= ESPectrum::target[0];
-
-        } else ESPectrum::vsync = false;
-
-    } else {
-
-        elapsedmicros = 0;
-        ESPectrum::vsync = false;
-
-    }
-
-    prevmicros = currentmicros;
-
-}
-
 void (*VIDEO::Draw)(unsigned int, bool) = &VIDEO::Blank;
 void (*VIDEO::Draw_Opcode)(bool) = &VIDEO::Blank_Opcode;
 void (*VIDEO::Draw_OSD169)(unsigned int, bool) = &VIDEO::MainScreen;
@@ -886,26 +842,6 @@ IRAM_ATTR void VIDEO::EndFrame() {
 // Border Drawing
 //----------------------------------------------------------------------------------------------------------------
 
-// IRAM_ATTR void VIDEO::DrawBorderFast() {
-
-//     uint8_t border = zxColor(borderColor,0);
-
-//     int i = 0;
-
-//     // Top border
-//     for (; i < lin_end; i++) memset((uint32_t *)(vga.frameBuffer[i]),border, vga.xres);
-
-//     // Paper border
-//     int brdsize = (vga.xres - SPEC_W) >> 1;
-//     for (; i < lin_end2; i++) {
-//         memset((uint32_t *)(vga.frameBuffer[i]), border, brdsize);
-//         memset((uint32_t *)(vga.frameBuffer[i] + vga.xres - brdsize), border, brdsize);
-//     }
-
-//     // Bottom border
-//     for (; i < OSD::scrH; i++) memset((uint32_t *)(vga.frameBuffer[i]),border, vga.xres);
-
-// }
 
 static int brdcol_cnt = 0;
 static int brdlin_cnt = 0;
