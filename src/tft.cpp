@@ -23,9 +23,8 @@ static int height = 135;
 static int speccy_width = 320;
 static int speccy_height = 200;
 
-
-static int vofs = 0;
-static int hofs = 0;
+static int vofs = (speccy_height - height) / 2; // Vertical offset for the display
+static int hofs = (speccy_width - width) / 2; // Horizontal
 
 static int vofs_inc = 1;
 
@@ -61,9 +60,10 @@ void TFTDisplay::sendFrameBuffer(uint8_t** frameBuffer) {
     for (int y = 0; y < height; ++y) {
         lcd.setAddrWindow(0, y, width, 1);
         // Convert each pixel in the line to RGB332 and store in pattern
-        for (int x = 0; x < width; ++x) {
+         for (int x = 0; x < width; ++x) {
             pattern[x] = convertR2G2B2S2_to_RGB332(frameBuffer[(speccy_height - y - vofs)][(x + hofs) ^ 2]);
         }
+
         lcd.writePixels(pattern, width);
     }
 
@@ -79,4 +79,25 @@ void TFTDisplay::sendFrameBuffer(uint8_t** frameBuffer) {
 
     lcd.endWrite();
     lcd.display();
+}
+
+void TFTDisplay::sendLine(int speccy_y, uint8_t* lineBuffer) {
+    if (speccy_y - vofs < 0 || speccy_y - vofs >= height) {
+        return; // Invalid line number
+    }
+    int y = speccy_y - vofs; // Adjust the line number based on vertical offset
+    lcd.setAddrWindow(0, y, width, 1);
+    for (int x = 0; x < width; ++x) {
+        pattern[x] = convertR2G2B2S2_to_RGB332(lineBuffer[(x + hofs) ^ 2]);
+    }
+
+    lcd.writePixels(pattern, width);
+}
+
+void TFTDisplay::startWrite() {
+    lcd.startWrite();
+}
+
+void TFTDisplay::endWrite() {
+    lcd.endWrite();
 }
