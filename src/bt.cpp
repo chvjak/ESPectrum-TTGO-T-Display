@@ -26,6 +26,8 @@
 #include "esp_a2dp_api.h"
 #include "esp_avrc_api.h"
 
+#include "AySound.h"
+
 #define BT_AV_TAG             "BT_AV"
 #define LOCAL_DEVICE_NAME     "ESP_A2DP_SRC"
 
@@ -33,18 +35,11 @@ static const char remote_device_name[] = "EPOS ADAPT 560";
 static esp_bd_addr_t s_peer_bda = {0};
 static uint8_t s_peer_bdname[ESP_BT_GAP_MAX_BDNAME_LEN + 1];
 
-static int32_t audio_data_cb(uint8_t *data, int32_t len)
+IRAM_ATTR static int32_t audio_data_cb(uint8_t *data, int32_t len)
 {
-    if (data == NULL || len < 0) {
-        return 0;
-    }
-
-    int16_t *p_buf = (int16_t *)data;
-    for (int i = 0; i < (len >> 1); i++) {
-        p_buf[i] = rand() % (1 << 16);
-    }
-
-    return len;
+    if (data == NULL || len < 0) return 0;
+    int samples = len / 2; // 16-bit samples
+    return AySound::getAudioSamples((int16_t*)data, samples) * 2;
 }
 
 static char *bda2str(esp_bd_addr_t bda, char *str, size_t size)
@@ -190,7 +185,6 @@ void bt_init(void)
     esp_bt_dev_set_device_name(LOCAL_DEVICE_NAME);
     esp_bt_gap_register_callback(bt_app_gap_cb);
 
-    // ESP_ERROR_CHECK(esp_avrc_tg_init());
 
     esp_avrc_rn_evt_cap_mask_t evt_set = {0};
     esp_avrc_rn_evt_bit_mask_operation(ESP_AVRC_BIT_MASK_OP_SET, &evt_set, ESP_AVRC_RN_VOLUME_CHANGE);

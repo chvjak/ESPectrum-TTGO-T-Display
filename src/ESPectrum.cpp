@@ -647,7 +647,7 @@ void ESPectrum::setup()
     // Create Audio task
     audioTaskQueue = xQueueCreate(1, sizeof(uint8_t *));
     // Latest parameter = Core. In ESPIF, main task runs on core 0 by default. In Arduino, loop() runs on core 1.
-    xTaskCreatePinnedToCore(&ESPectrum::audioTask, "audioTask", 2048 /* 1024 /* 1536 */, NULL, configMAX_PRIORITIES - 1, &audioTaskHandle, 1);
+    // xTaskCreatePinnedToCore(&ESPectrum::audioTask, "audioTask", 2048 /* 1024 /* 1536 */, NULL, configMAX_PRIORITIES - 1, &audioTaskHandle, 1);
 
     // Set samples per frame and AY_emu flag depending on arch
     if (Config::arch == "48K") {
@@ -1692,6 +1692,10 @@ IRAM_ATTR void ESPectrum::AYGetSample() {
 //=======================================================================================
 // MAIN LOOP
 //=======================================================================================
+IRAM_ATTR void ESPectrum::loopTask(void * pvParameters)
+{
+  ESPectrum::loop();
+}
 
 IRAM_ATTR void ESPectrum::loop() {
 
@@ -1720,7 +1724,7 @@ for(;;) {
     ts_start = esp_timer_get_time();
 
     // Send audioBuffer to pwmaudio
-    if (ESP_delay) xQueueSend(audioTaskQueue, &param, portMAX_DELAY);
+    // if (ESP_delay) xQueueSend(audioTaskQueue, &param, portMAX_DELAY);
 
     audbufcnt = 0;
     audbufcntover = 0;
@@ -1733,7 +1737,7 @@ for(;;) {
     faudioBit = lastaudioBit;
     faudbufcntAY = audbufcntAY;
 
-    if (ESP_delay) xQueueSend(audioTaskQueue, &param, portMAX_DELAY);
+    // if (ESP_delay) xQueueSend(audioTaskQueue, &param, portMAX_DELAY);
 
     processKeyboard();
 
@@ -1831,7 +1835,7 @@ for(;;) {
 
             // Audio sync (once every 128 frames ~ 2,5 seconds)
             if (sync_cnt & 0x80) {
-                ESPoffset = 128 - pwm_audio_rbstats();
+                ESPoffset = 128 ; //- pwm_audio_rbstats();
                 sync_cnt = 0;
             }
 
@@ -1853,7 +1857,7 @@ for(;;) {
 
         // Audio sync
         if (++sync_cnt & 0x10) {
-            ESPoffset = 128 - pwm_audio_rbstats();
+            ESPoffset = 128 ; // - pwm_audio_rbstats();
             sync_cnt = 0;
         }
 

@@ -220,7 +220,7 @@ void VIDEO::Init() {
     if (Config::videomode) {
 
         // xTaskCreatePinnedToCore(&VIDEO::vgataskinit, "videoTask", 1024, NULL, configMAX_PRIORITIES - 2, &videoTaskHandle, 1);
-        xTaskCreatePinnedToCore(&VIDEO::vgataskinit, "videoTask", 1024, NULL, 5, &videoTaskHandle, 1);
+        // xTaskCreatePinnedToCore(&VIDEO::vgataskinit, "videoTask", 1024, NULL, 5, &videoTaskHandle, 1);
 
         // Wait for vertical sync to ensure vga.init is done
         for (;;) {

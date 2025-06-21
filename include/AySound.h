@@ -3,7 +3,7 @@
 ESPectrum, a Sinclair ZX Spectrum emulator for Espressif ESP32 SoC
 
 AY SOUND EMULATION, based on libayemu by:
-Sashnov Alexander <sashnov@ngs.ru> and Roman Scherbakov <v_soft@nm.ru> 
+Sashnov Alexander <sashnov@ngs.ru> and Roman Scherbakov <v_soft@nm.ru>
 
 Copyright (c) 2023, 2024 Víctor Iborra [Eremus] and 2023 David Crespo [dcrespo3d]
 https://github.com/EremusOne/ZX-ESPectrum-IDF
@@ -31,7 +31,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-To Contact the dev team you can write to zxespectrum@gmail.com or 
+To Contact the dev team you can write to zxespectrum@gmail.com or
 visit https://zxespectrum.speccy.org/contacto
 
 */
@@ -97,7 +97,7 @@ typedef enum {
 typedef struct
 {
     int tone_a;       /**< R0, R1 */
-    int tone_b;       /**< R2, R3 */    
+    int tone_b;       /**< R2, R3 */
     int tone_c;       /**< R4, R5 */
     int noise;        /**< R6 */
     int R7_tone_a;    /**< R7 bit 0 */
@@ -144,7 +144,7 @@ public:
     static void updEnvType();
     static void updIOPortA();
     static void updIOPortB();
-    
+
     static void reset();
     static uint8_t getRegisterData();
     static void selectRegister(uint8_t data);
@@ -158,6 +158,8 @@ public:
     static void prepare_generation();
     static void gen_sound(int bufsize, int bufpos);
 
+    static int getAudioSamples(int16_t* out, int samples);
+
     static void(*updateReg[16])();
 
     static uint8_t SamplebufAY[ESP_AUDIO_SAMPLES_PENTAGON];
@@ -169,7 +171,7 @@ private:
     static ayemu_chip_t type;               /**< general chip type (\b AYEMU_AY or \b AYEMU_YM) */
     static int ChipFreq;                    /**< chip emulator frequency */
     // static int eq[6];                       /**< volumes for channels.
-                                            // Array contains 6 elements: 
+                                            // Array contains 6 elements:
                                             // A left, A right, B left, B right, C left and C right;
                                             // range -100...100 */
     static ayemu_regdata_t ayregs;          /**< parsed registers data */
@@ -185,7 +187,7 @@ private:
     static int bit_b;                       /**< state of channel B generator */
     static int bit_c;                       /**< state of channel C generator */
     static int bit_n;                       /**< current generator state */
-    static int period_n;                    // Noise period 
+    static int period_n;                    // Noise period
     static int cnt_a;                       /**< back counter of A */
     static int cnt_b;                       /**< back counter of B */
     static int cnt_c;                       /**< back counter of C */
