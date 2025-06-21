@@ -15,7 +15,6 @@
 
 using LGFX = lgfx::LGFX;
 
-static LGFX lcd;
 static int width = 240;
 static int height = 135;
 
@@ -28,7 +27,7 @@ static int hofs = (speccy_width - width) / 2; // Horizontal
 
 static int vofs_inc = 1;
 
-static uint8_t pattern[240];
+IRAM_BSS_ATTR static uint8_t pattern[240];
 
 void TFTDisplay::begin() {
     lcd.init();
@@ -55,33 +54,7 @@ uint8_t convertR2G2B2S2_to_RGB332(uint8_t color) {
     return (r3 << 5) | (g3 << 2) | b2;
 }
 
-void TFTDisplay::sendFrameBuffer(uint8_t** frameBuffer) {
-    lcd.startWrite();
-    for (int y = 0; y < height; ++y) {
-        lcd.setAddrWindow(0, y, width, 1);
-        // Convert each pixel in the line to RGB332 and store in pattern
-         for (int x = 0; x < width; ++x) {
-            pattern[x] = convertR2G2B2S2_to_RGB332(frameBuffer[(speccy_height - y - vofs)][(x + hofs) ^ 2]);
-        }
-
-        lcd.writePixels(pattern, width);
-    }
-
-    vofs += vofs_inc;
-    if (vofs >= (speccy_height - height)) {
-        vofs = (speccy_height - height);
-        vofs_inc = -1;
-    }
-    if (vofs <= 0) {
-        vofs = 0;
-        vofs_inc = 1;
-    }
-
-    lcd.endWrite();
-    lcd.display();
-}
-
-void TFTDisplay::sendLine(int speccy_y, uint8_t* lineBuffer) {
+IRAM_ATTR void TFTDisplay::sendLine(int speccy_y, uint8_t* lineBuffer) {
     if (speccy_y - vofs < 0 || speccy_y - vofs >= height) {
         return; // Invalid line number
     }
@@ -94,10 +67,12 @@ void TFTDisplay::sendLine(int speccy_y, uint8_t* lineBuffer) {
     lcd.writePixels(pattern, width);
 }
 
-void TFTDisplay::startWrite() {
+IRAM_ATTR void TFTDisplay::startWrite() {
     lcd.startWrite();
 }
 
-void TFTDisplay::endWrite() {
+IRAM_ATTR void TFTDisplay::endWrite() {
     lcd.endWrite();
 }
+
+LGFX TFTDisplay::lcd;

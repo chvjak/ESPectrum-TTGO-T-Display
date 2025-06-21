@@ -1,4 +1,6 @@
 #include <cstdint>
+#include <LovyanGFX.hpp>
+#include <LGFX_AUTODETECT.hpp>  // This defines the LGFX class
 
 class TFTDisplay {
   public:
@@ -8,4 +10,6 @@ class TFTDisplay {
 
     static void startWrite();
     static void endWrite();
+
+    static LGFX lcd; //IRAM_ATTR?
 };
