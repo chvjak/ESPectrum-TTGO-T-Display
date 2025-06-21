@@ -59,12 +59,12 @@ string   Config::romSet48 = "48K";
 string   Config::romSet128 = "128K";
 string   Config::romSetTK90X = "v1es";
 string   Config::romSetTK95 = "95es";
-string   Config::pref_arch = "48K";
+string   Config::pref_arch = "128K";
 string   Config::pref_romSet_48 = "48K";
 string   Config::pref_romSet_128 = "128K";
 string   Config::pref_romSet_TK90X = "v1es";
 string   Config::pref_romSet_TK95 = "95es";
-string   Config::ram_file = "/spiffs/2.z80";
+string   Config::ram_file = "/spiffs/5.z80";
 string   Config::last_ram_file = NO_RAM_FILE;
 
 bool     Config::slog_on = true;

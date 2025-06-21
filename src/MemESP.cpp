@@ -96,13 +96,11 @@ bool MemESP::Init() {
     MemESP::ram[0] = (unsigned char *) heap_caps_calloc(0x4000, sizeof(unsigned char), MALLOC_CAP_8BIT);
     MemESP::ram[2] = (unsigned char *) heap_caps_calloc(0x4000, sizeof(unsigned char), MALLOC_CAP_8BIT);
 
-    /*
     MemESP::ram[7] = (unsigned char *) heap_caps_calloc(0x4000, sizeof(unsigned char), MALLOC_CAP_8BIT);
     MemESP::ram[1] = (unsigned char *) heap_caps_calloc(0x8000, sizeof(unsigned char), MALLOC_CAP_8BIT);
     MemESP::ram[3] = ((unsigned char *) MemESP::ram[1]) + 0x4000;
     MemESP::ram[4] = (unsigned char *) heap_caps_calloc(0x4000, sizeof(unsigned char), MALLOC_CAP_8BIT);
     MemESP::ram[6] = (unsigned char *) heap_caps_calloc(0x4000, sizeof(unsigned char), MALLOC_CAP_8BIT);
-    */
 
     #endif
 
@@ -127,13 +125,11 @@ void MemESP::Reset() {
     memset(MemESP::ram[2],0,0x4000);
     memset(MemESP::ram[5],0,0x4000);
 
-    /*
     memset(MemESP::ram[1],0,0x4000);
     memset(MemESP::ram[3],0,0x4000);
     memset(MemESP::ram[4],0,0x4000);
     memset(MemESP::ram[6],0,0x4000);
     memset(MemESP::ram[7],0,0x4000);
-    */
 
     MemESP::romInUse = 0;
     MemESP::bankLatch = 0;
