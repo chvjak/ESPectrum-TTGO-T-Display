@@ -167,6 +167,7 @@ int ESPectrum::ESPtestvar2 = 0;
 #define START_MSG_DURATION 20
 
 void ShowStartMsg() {
+    return; // Disable StartMsg
 
     fabgl::VirtualKeyItem Nextkey;
 
@@ -241,7 +242,7 @@ void ShowStartMsg() {
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 
-    VIDEO::vga.clear(zxColor(7,0));
+    // VIDEO::vga.clear(zxColor(7,0));
 
     // Disable StartMsg
     Config::StartMsg = false;
