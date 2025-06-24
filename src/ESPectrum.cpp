@@ -1682,6 +1682,8 @@ IRAM_ATTR void ESPectrum::BeeperGetSample() {
 }
 
 IRAM_ATTR void ESPectrum::AYGetSample() {
+    return;
+
     // AY audiobuffer generation (oversample)
     uint32_t audbufpos = CPU::tstates / audioAYDivider;
     if (audbufpos > audbufcntAY) {
