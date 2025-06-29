@@ -108,7 +108,7 @@ std::vector<BTDevice> bt_discover_devices() {
     g_discovered_devices.clear();
 
     // Start discovery (blocking, 10s)
-    bt_init(); // includes start_discovery()
+    start_discovery(); // includes start_discovery()
     // Wait for discovery to finish (polling for DISCOVERY_STOPPED)
     // In a real implementation, use an event group or callback to signal completion.
     int wait_ms = 0;
@@ -142,20 +142,6 @@ bool bt_connect_device(const uint8_t mac[6]) {
         return true;
     }
     return false;
-}
-
-// --- Get currently connected device MAC ---
-bool bt_get_connected_mac(uint8_t mac[6]) {
-    std::lock_guard<std::mutex> lock(g_bt_mutex);
-    if (memcmp(g_connected_mac, "\0\0\0\0\0\0", 6) == 0) return false;
-    memcpy(mac, g_connected_mac, 6);
-    return true;
-}
-
-// --- Get currently connected device name ---
-std::string bt_get_connected_name() {
-    std::lock_guard<std::mutex> lock(g_bt_mutex);
-    return g_connected_name;
 }
 
 static void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param)
@@ -235,6 +221,7 @@ void a2dp_event_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param)
                 ESP_LOGW(BT_AV_TAG, "a2dp media ready, starting ...");
 
                 vTaskDelay(6000 / portTICK_PERIOD_MS); // wait for audio data to be ready
+                esp_err_t res = esp_avrc_ct_send_set_absolute_volume_cmd(1, 64); // set initial volume to 64%
                 esp_a2d_media_ctrl(ESP_A2D_MEDIA_CTRL_START); // should be called after emul-init
             }
             break;
@@ -284,7 +271,10 @@ void bt_init(void)
     ESP_ERROR_CHECK(esp_a2d_source_init());
     ESP_ERROR_CHECK(esp_a2d_register_callback(a2dp_event_cb));
     ESP_ERROR_CHECK(esp_a2d_source_register_data_callback(audio_data_cb));
+}
 
+void start_discovery(void)
+{
     ESP_LOGI(BT_AV_TAG, "Starting device discovery...");
     printf("Starting Bluetooth discovery...\n");
     esp_bt_gap_start_discovery(ESP_BT_INQ_MODE_GENERAL_INQUIRY, 10, 0);

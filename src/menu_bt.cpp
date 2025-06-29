@@ -18,19 +18,30 @@ static inline bool button_pressed(gpio_num_t gpio) {
     return gpio_get_level(gpio) == 0;
 }
 
-// NVS helpers for MAC
-static bool load_bt_mac(uint8_t mac[6]) {
+// NVS helpers for MAC and device name
+static bool load_bt_device(uint8_t mac[6], std::string& name) {
     nvs_handle_t nvs;
     if (nvs_open("btcfg", NVS_READONLY, &nvs) != ESP_OK) return false;
     size_t len = 6;
     esp_err_t err = nvs_get_blob(nvs, "btmac", mac, &len);
+    if (err != ESP_OK || len != 6) {
+        nvs_close(nvs);
+        return false;
+    }
+    char namebuf[64] = {0};
+    len = sizeof(namebuf);
+    err = nvs_get_str(nvs, "btname", namebuf, &len);
     nvs_close(nvs);
-    return err == ESP_OK && len == 6;
+    if (err == ESP_OK) name = namebuf;
+    else name.clear();
+    return true;
 }
-static void save_bt_mac(const uint8_t mac[6]) {
+
+static void save_bt_device(const uint8_t mac[6], const std::string& name) {
     nvs_handle_t nvs;
     if (nvs_open("btcfg", NVS_READWRITE, &nvs) == ESP_OK) {
         nvs_set_blob(nvs, "btmac", mac, 6);
+        nvs_set_str(nvs, "btname", name.c_str());
         nvs_commit(nvs);
         nvs_close(nvs);
     }
@@ -59,12 +70,13 @@ bool showBTMenu() {
 
     // Level 1: Show connected device (if any) and "Discover Devices"
     uint8_t saved_mac[6] = {0};
-    bool has_saved_mac = load_bt_mac(saved_mac);
-    uint8_t connected_mac[6] = {0};
-    bool is_connected = bt_get_connected_mac(connected_mac);
-    std::string connected_name = is_connected ? bt_get_connected_name() : "";
+    std::string saved_name;
+    bool has_saved_device = load_bt_device(saved_mac, saved_name);
 
     int sel = 0;
+    int menu_items = has_saved_device ? 3 : 2; // Discover, Connect, Cancel
+
+    bt_init();
     while (true) {
         lcd.startWrite();
         lcd.clear(TFT_BLACK);
@@ -73,31 +85,21 @@ bool showBTMenu() {
         lcd.setCursor(0, y);
         lcd.printf("Bluetooth Menu\n");
         y += 16;
-        if (is_connected) {
-            lcd.setTextColor(TFT_GREEN, TFT_BLACK);
+        if (has_saved_device) {
+            lcd.setTextColor(sel == 0 ? TFT_YELLOW : TFT_WHITE, TFT_BLACK);
             lcd.setCursor(0, y);
-            lcd.printf("Connected: %s", connected_name.c_str());
-            y += 16;
-            lcd.setTextColor(TFT_WHITE, TFT_BLACK);
-            lcd.setCursor(0, y);
-            lcd.printf("MAC: %s", mac_to_str(connected_mac).c_str());
-            y += 16;
-        } else if (has_saved_mac) {
-            lcd.setTextColor(TFT_YELLOW, TFT_BLACK);
-            lcd.setCursor(0, y);
-            lcd.printf("Saved device: %s", mac_to_str(saved_mac).c_str());
-            y += 16;
-        } else {
-            lcd.setTextColor(TFT_RED, TFT_BLACK);
-            lcd.setCursor(0, y);
-            lcd.printf("No device connected");
+            lcd.printf("Connect to: %s", saved_name.c_str());
             y += 16;
         }
-        lcd.setTextColor(sel == 0 ? TFT_YELLOW : TFT_WHITE, TFT_BLACK);
+
+        // Discover Devices
+        lcd.setTextColor(sel == (has_saved_device ? 1 : 0) ? TFT_YELLOW : TFT_WHITE, TFT_BLACK);
         lcd.setCursor(0, y);
         lcd.printf("Discover Devices\n");
         y += 16;
-        lcd.setTextColor(sel == 1 ? TFT_YELLOW : TFT_WHITE, TFT_BLACK);
+
+        // Cancel
+        lcd.setTextColor(sel == (menu_items - 1) ? TFT_YELLOW : TFT_WHITE, TFT_BLACK);
         lcd.setCursor(0, y);
         lcd.printf("Cancel\n");
         lcd.endWrite();
@@ -109,15 +111,44 @@ bool showBTMenu() {
             select_pressed = button_pressed(MENU_KEY_SELECT);
             vTaskDelay(10 / portTICK_PERIOD_MS);
         }
+
         // Debounce: wait for release
         while (button_pressed(MENU_KEY_NEXT) || button_pressed(MENU_KEY_SELECT)) {
             vTaskDelay(10 / portTICK_PERIOD_MS);
         }
+
         if (next_pressed) {
-            sel = (sel + 1) % 2;
+            sel = (sel + 1) % menu_items;
         } else if (select_pressed) {
-            if (sel == 0) break; // Discover Devices
-            else return false;   // Cancel
+            if (sel == has_saved_device ? 1 : 0) break; // Discover Devices
+            else if (has_saved_device && sel == 0) {
+                // Connect to saved device
+                lcd.startWrite();
+                lcd.clear(TFT_BLACK);
+                lcd.setTextColor(TFT_WHITE, TFT_BLACK);
+                lcd.setCursor(0, 0);
+                lcd.printf("Connecting to %s...\n", !saved_name.empty() ? saved_name.c_str() : mac_to_str(saved_mac).c_str());
+                lcd.endWrite();
+                if (bt_connect_device(saved_mac)) {
+                    lcd.startWrite();
+                    lcd.setTextColor(TFT_GREEN, TFT_BLACK);
+                    lcd.setCursor(0, 16);
+                    lcd.printf("Connected!\n");
+                    lcd.endWrite();
+                    vTaskDelay(1000 / portTICK_PERIOD_MS);
+                    return true;
+                } else {
+                    lcd.startWrite();
+                    lcd.setTextColor(TFT_RED, TFT_BLACK);
+                    lcd.setCursor(0, 16);
+                    lcd.printf("Failed to connect!\n");
+                    lcd.endWrite();
+                    vTaskDelay(2000 / portTICK_PERIOD_MS);
+                    return false;
+                }
+            } else {
+                return false; // Cancel
+            }
         }
     }
 
@@ -181,7 +212,7 @@ bool showBTMenu() {
             lcd.printf("Connecting to %s...\n", devices[dev_sel].name.c_str());
             lcd.endWrite();
             if (bt_connect_device(devices[dev_sel].mac)) {
-                save_bt_mac(devices[dev_sel].mac);
+                save_bt_device(devices[dev_sel].mac, devices[dev_sel].name);
                 lcd.startWrite();
                 lcd.setTextColor(TFT_GREEN, TFT_BLACK);
                 lcd.setCursor(0, 16);
