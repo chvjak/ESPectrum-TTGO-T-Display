@@ -450,7 +450,7 @@ void ESPectrum::bootKeyboard() {
 
 void ESPectrum::setup()
 {
-    bt_init();
+    // bt_init();
 
     if (Config::slog_on) {
         printf("------------------------------------\n");

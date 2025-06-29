@@ -36,6 +36,7 @@ visit https://zxespectrum.speccy.org/contacto
 #include "ESPectrum.h"
 #include "FileUtils.h"
 #include "menu1.h"
+#include "menu_bt.h"
 #include "Config.h"
 TaskHandle_t mainTaskHandle;
 
@@ -46,6 +47,9 @@ extern "C" void app_main(void) {
     Config::ram_file = selected;
     Config::save();
   }
+
+  showBTMenu();
+
   ESPectrum::setup();
   xTaskCreatePinnedToCore(&ESPectrum::loopTask, "mainTask", 5024, NULL, 5, &mainTaskHandle, 1);
 }
