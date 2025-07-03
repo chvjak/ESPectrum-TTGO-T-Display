@@ -1,10 +1,10 @@
 /*
 	Author: bitluni 2019
-	License: 
+	License:
 	Creative Commons Attribution ShareAlike 4.0
 	https://creativecommons.org/licenses/by-sa/4.0/
-	
-	For further details check out: 
+
+	For further details check out:
 		https://youtube.com/bitlunislab
 		https://github.com/bitluni
 		http://bitluni.net
@@ -18,7 +18,7 @@ class GraphicsR2G2B2S2Swapped: public Graphics<unsigned char>
 	typedef unsigned char Color;
 	static const Color RGBAXMask = 0x3f;
 	Color SBits;
-	
+
 	GraphicsR2G2B2S2Swapped()
 	{
 		SBits = 0xc0;
@@ -73,7 +73,7 @@ class GraphicsR2G2B2S2Swapped: public Graphics<unsigned char>
 			frameBuffer[y][x^2] = r | (g & 0b1100) | (b & 0b110000) | SBits;
 		}
 	}
-	
+
 	virtual void dotMix(int x, int y, Color color)
 	{
 		if ((unsigned int)x < xres && (unsigned int)y < yres && (color >> 6) != 0)
@@ -88,9 +88,9 @@ class GraphicsR2G2B2S2Swapped: public Graphics<unsigned char>
 			unsigned int g = ((color & 0b1100) * a + go) & 0b11000000000000000000;
 			unsigned int b = ((color & 0b110000) * a + bo) & 0b1100000000000000000000;
 			frameBuffer[y][x^2] = ((r | g | b) >> 16) | SBits;
-		}	
+		}
 	}
-	
+
 	virtual Color get(int x, int y)
 	{
 		if ((unsigned int)x < xres && (unsigned int)y < yres)
@@ -105,8 +105,4 @@ class GraphicsR2G2B2S2Swapped: public Graphics<unsigned char>
 				frameBuffer[y][x^2] = (color & RGBAXMask) | SBits;
 	}
 
-	// virtual Color** allocateFrameBuffer()
-	// {
-	// 	return Graphics<Color>::allocateFrameBuffer(xres, yres, (Color)SBits);
-	// }
 };
